@@ -1,6 +1,7 @@
 // controllers/userController.js
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/env.config.js';
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -24,7 +25,7 @@ export const registerUser = async (req, res) => {
     });
 
     // Generate token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id },JWT_SECRET, {
       expiresIn: '30d',
     });
 

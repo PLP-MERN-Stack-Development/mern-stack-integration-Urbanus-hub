@@ -9,7 +9,7 @@
     "dev": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Urbanus Kioko",
   "license": "ISC",
   "type": "module",
   "dependencies": {
