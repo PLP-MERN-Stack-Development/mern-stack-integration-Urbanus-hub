@@ -1,34 +1,33 @@
 // server.js - Main server file for the MERN blog application
-
-// Import required modules
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import path from 'path'
+import { PORT, NODE_ENV} from './config/env.config.js';
 
 // Import routes
-const postRoutes = require('./routes/posts');
-const categoryRoutes = require('./routes/categories');
-const authRoutes = require('./routes/auth');
+import postRoutes from './routes/postRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import authRoutes from './routes/userRoutes.js';
 
-// Load environment variables
-dotenv.config();
+
+
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
+const __dirname = path.resolve();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Log requests in development mode
-if (process.env.NODE_ENV === 'development') {
+if (NODE_ENV === 'development') {
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
@@ -75,4 +74,4 @@ process.on('unhandledRejection', (err) => {
   process.exit(1);
 });
 
-module.exports = app; 
+export default app;
