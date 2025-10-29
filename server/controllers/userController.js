@@ -1,5 +1,5 @@
-
-import User from '../models/User.js';
+import User from "../models/User.js";
+import { clerkClient } from '@clerk/backend';
 
 // @desc    Get current user profile
 // @route   GET /api/users/me
@@ -23,9 +23,9 @@ export const getMe = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { name, role } = req.body;
-    
+
     const fieldsToUpdate = {};
-    
+
     if (name) fieldsToUpdate.name = name;
     if (role) fieldsToUpdate.role = role;
 
@@ -36,10 +36,10 @@ export const updateProfile = async (req, res) => {
 
     // Also update in Clerk if name changed
     if (name) {
-      const [firstName, ...lastNameParts] = name.split(' ');
+      const [firstName, ...lastNameParts] = name.split(" ");
       await clerkClient.users.updateUser(req.user.clerkId, {
         firstName: firstName,
-        lastName: lastNameParts.join(' '),
+        lastName: lastNameParts.join(" "),
       });
     }
 
@@ -77,7 +77,7 @@ export const getUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({
@@ -97,12 +97,12 @@ export const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Also delete from Clerk
     await clerkClient.users.deleteUser(user.clerkId);
-    
+
     await user.deleteOne();
 
     res.status(200).json({
@@ -119,7 +119,7 @@ export const deleteUser = async (req, res) => {
 // @access  Public
 export const getCreators = async (req, res) => {
   try {
-    const creators = await User.find({ role: 'creator' });
+    const creators = await User.find({ role: "creator" });
 
     res.status(200).json({
       success: true,
@@ -139,30 +139,33 @@ export const handleClerkWebhook = async (req, res) => {
     const { type, data } = req.body;
 
     switch (type) {
-      case 'user.created':
+      case "user.created":
         // Create user in our database when created in Clerk
         await User.create({
           clerkId: data.id,
           email: data.email_addresses[0]?.email_address,
-          name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'User',
+          name:
+            `${data.first_name || ""} ${data.last_name || ""}`.trim() || "User",
           avatar: data.image_url,
-          role: 'reader',
+          role: "reader",
         });
         break;
 
-      case 'user.updated':
+      case "user.updated":
         // Update user in our database
         await User.findOneAndUpdate(
           { clerkId: data.id },
           {
             email: data.email_addresses[0]?.email_address,
-            name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'User',
+            name:
+              `${data.first_name || ""} ${data.last_name || ""}`.trim() ||
+              "User",
             avatar: data.image_url,
           }
         );
         break;
 
-      case 'user.deleted':
+      case "user.deleted":
         // Delete user from our database
         await User.findOneAndDelete({ clerkId: data.id });
         break;
@@ -170,7 +173,7 @@ export const handleClerkWebhook = async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error("Webhook error:", error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
@@ -182,7 +185,9 @@ export const syncUser = async (req, res) => {
   try {
     // The clerkAuth.protect middleware will ensure req.user exists (it finds or creates the user)
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authenticated' });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authenticated" });
     }
 
     res.status(200).json({ success: true, data: req.user });

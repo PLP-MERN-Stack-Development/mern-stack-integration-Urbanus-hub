@@ -1,6 +1,7 @@
 // context/AuthContext.js - Updated to use Clerk
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useAuth as useClerkAuth } from '@clerk/clerk-react';
+import api from '../services/api';
 import { toast } from 'sonner';
 
 const AuthContext = createContext();
@@ -24,6 +25,22 @@ export const AuthProvider = ({ children }) => {
     email: user.primaryEmailAddress?.emailAddress || '',
     avatar: user.imageUrl || `https://picsum.photos/seed/${user.id}/40/40.jpg`
   } : null;
+
+  // When Clerk reports signed in, call server to sync/create local user record
+  useEffect(() => {
+    const sync = async () => {
+      try {
+        if (isSignedIn && !isLoading) {
+          await api.get('/users/sync');
+        }
+      } catch (err) {
+        // non-fatal: show a toast in dev only
+        console.error('Error syncing user with server:', err?.response?.data || err.message);
+      }
+    };
+
+    sync();
+  }, [isSignedIn, isLoading]);
 
   const value = {
     isSignedIn: !!isSignedIn,
