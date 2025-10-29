@@ -1,4 +1,4 @@
-// components/AuthPromptModal.js - Updated for Clerk
+
 import React from 'react';
 import { SignInButton } from '@clerk/clerk-react';
 import { Lock, X } from 'lucide-react';

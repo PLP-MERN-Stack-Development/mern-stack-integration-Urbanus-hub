@@ -1,4 +1,3 @@
-// App.js - Updated with Clerk Integration
 import React from "react";
 import {
   ClerkProvider,
@@ -16,7 +15,9 @@ import { PostProvider } from "./context/PostContext";
 import { AuthProvider } from "./context/AuthContext";
 
 // Your Clerk Publishable Key
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_your-key-here";
+  import CreatorDashboard from "./pages/CreatorDashboard";
 
 function App() {
   return (
@@ -24,11 +25,12 @@ function App() {
       <AuthProvider>
         <PostProvider>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            <Navbar />
+            {/* <Navbar />
             <HeroSection />
             <CategoryFilter />
             <PostGrid />
-            <Footer />
+            <Footer /> */}
+            <CreatorDashboard/>
           </div>
         </PostProvider>
       </AuthProvider>
