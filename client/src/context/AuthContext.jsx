@@ -1,5 +1,6 @@
-// context/AuthContext.js - Authentication Context
+// context/AuthContext.js - Updated to use Clerk
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import { toast } from 'sonner';
 
 const AuthContext = createContext();
@@ -13,54 +14,30 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate checking auth status
-    setTimeout(() => {
-      const signedIn = localStorage.getItem('isSignedIn') === 'true';
-      setIsSignedIn(signedIn);
-      if (signedIn) {
-        setUser({
-          id: 'user123',
-          firstName: 'Sarah',
-          lastName: 'Johnson',
-          email: 'sarah@example.com',
-          avatar: 'https://picsum.photos/seed/sarah/40/40.jpg'
-        });
-      }
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  const signIn = () => {
-    setIsSignedIn(true);
-    setUser({
-      id: 'user123',
-      firstName: 'Sarah',
-      lastName: 'Johnson',
-      email: 'sarah@example.com',
-      avatar: 'https://picsum.photos/seed/sarah/40/40.jpg'
-    });
-    localStorage.setItem('isSignedIn', 'true');
-    toast.success('Successfully signed in!');
-  };
-
-  const signOut = () => {
-    setIsSignedIn(false);
-    setUser(null);
-    localStorage.removeItem('isSignedIn');
-    toast.success('Successfully signed out!');
-  };
+  const { isSignedIn, user, isLoading } = useClerkAuth();
+  
+  // Transform Clerk user to our format
+  const formattedUser = user ? {
+    id: user.id,
+    firstName: user.firstName || 'User',
+    lastName: user.lastName || '',
+    email: user.primaryEmailAddress?.emailAddress || '',
+    avatar: user.imageUrl || `https://picsum.photos/seed/${user.id}/40/40.jpg`
+  } : null;
 
   const value = {
-    isSignedIn,
-    user,
+    isSignedIn: !!isSignedIn,
+    user: formattedUser,
     isLoading,
-    signIn,
-    signOut
+    // Clerk handles sign in/out automatically
+    signIn: () => {
+      // Clerk handles this through SignInButton component
+      toast.info('Please use the Sign In button');
+    },
+    signOut: () => {
+      // Clerk handles this through UserButton component
+      toast.info('Please use the profile menu to sign out');
+    }
   };
 
   return (

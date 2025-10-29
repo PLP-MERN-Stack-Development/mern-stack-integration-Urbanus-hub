@@ -1,11 +1,12 @@
-// components/Navbar.js - Navigation Component
+// components/Navbar.js - Updated with Clerk Components
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { SignInButton, UserButton, useUser } from '@clerk/clerk-react';
 import { Search, Bell, Menu, X, User, Settings, LogOut, Bookmark, FileText } from 'lucide-react';
 
 const Navbar = () => {
-  const { isSignedIn, user, isLoading, signIn, signOut } = useAuth();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { isSignedIn, user, isLoading } = useAuth();
+  const { user: clerkUser } = useUser();
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasNotifications, setHasNotifications] = useState(true);
@@ -57,93 +58,91 @@ const Navbar = () => {
             
             {isLoading ? (
               <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
-            ) : isSignedIn ? (
-              <>
-                {/* Notifications */}
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className="relative p-2 rounded-full text-gray-600 hover:text-green-600 focus:outline-none transition-colors"
-                  >
-                    <Bell className="h-5 w-5" />
-                    {hasNotifications && (
-                      <span className="notification-dot absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
-                    )}
-                  </button>
-                  {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl p-4 z-10 max-h-96 overflow-y-auto">
-                      <h3 className="font-semibold text-gray-800 mb-3">Notifications</h3>
-                      <div className="space-y-3">
-                        {notifications.map(notif => (
-                          <div key={notif.id} className="flex items-start p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
-                            <img src={notif.avatar} alt={notif.user} className="w-8 h-8 rounded-full mr-3 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm"><span className="font-medium">{notif.user}</span> {notif.action}</p>
-                              <p className="text-xs text-gray-500">{notif.time}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* User Menu */}
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <img className="h-8 w-8 rounded-full" src={user.avatar} alt="Profile" />
-                  </button>
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-1 z-10">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900 truncate">{user.firstName} {user.lastName}</p>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                      </div>
-                      <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                        <User className="h-4 w-4 mr-2" />
-                        My Profile
-                      </a>
-                      <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                        <FileText className="h-4 w-4 mr-2" />
-                        My Articles
-                      </a>
-                      <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                        <Bookmark className="h-4 w-4 mr-2" />
-                        Bookmarks
-                      </a>
-                      <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Settings
-                      </a>
-                      <button 
-                        onClick={signOut}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </>
             ) : (
-              <div className="flex space-x-2">
-                <button 
-                  onClick={signIn}
-                  className="px-3 lg:px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-full hover:bg-green-50 transition-colors"
-                >
-                  Sign In
-                </button>
-                <button 
-                  onClick={signIn}
-                  className="px-3 lg:px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors"
-                >
-                  Sign Up
-                </button>
-              </div>
+              <>
+                {isSignedIn ? (
+                  <>
+                    {/* Notifications */}
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className="relative p-2 rounded-full text-gray-600 hover:text-green-600 focus:outline-none transition-colors"
+                      >
+                        <Bell className="h-5 w-5" />
+                        {hasNotifications && (
+                          <span className="notification-dot absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+                        )}
+                      </button>
+                      {showNotifications && (
+                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl p-4 z-10 max-h-96 overflow-y-auto">
+                          <h3 className="font-semibold text-gray-800 mb-3">Notifications</h3>
+                          <div className="space-y-3">
+                            {notifications.map(notif => (
+                              <div key={notif.id} className="flex items-start p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
+                                <img src={notif.avatar} alt={notif.user} className="w-8 h-8 rounded-full mr-3 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm"><span className="font-medium">{notif.user}</span> {notif.action}</p>
+                                  <p className="text-xs text-gray-500">{notif.time}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Clerk UserButton */}
+                    <div className="relative">
+                      <UserButton 
+                        appearance={{
+                          elements: {
+                            avatarBox: "h-8 w-8",
+                            userButtonPopoverCard: "shadow-xl",
+                            userButtonPopoverActionButton: "hover:bg-gray-50 transition-colors"
+                          }
+                        }}
+                        afterSignOutUrl="/"
+                      >
+                        <UserButton.MenuItems>
+                          <UserButton.Link 
+                            label="My Profile" 
+                            href="/profile" 
+                            labelIcon={<User className="h-4 w-4" />}
+                          />
+                          <UserButton.Link 
+                            label="My Articles" 
+                            href="/my-articles" 
+                            labelIcon={<FileText className="h-4 w-4" />}
+                          />
+                          <UserButton.Link 
+                            label="Bookmarks" 
+                            href="/bookmarks" 
+                            labelIcon={<Bookmark className="h-4 w-4" />}
+                          />
+                          <UserButton.Action 
+                            label="Settings" 
+                            onClick={() => console.log('Settings clicked')}
+                            labelIcon={<Settings className="h-4 w-4" />}
+                          />
+                        </UserButton.MenuItems>
+                      </UserButton>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex space-x-2">
+                    <SignInButton mode="modal">
+                      <button className="px-3 lg:px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-full hover:bg-green-50 transition-colors">
+                        Sign In
+                      </button>
+                    </SignInButton>
+                    <SignInButton mode="modal" redirectUrl="/dashboard">
+                      <button className="px-3 lg:px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors">
+                        Sign Up
+                      </button>
+                    </SignInButton>
+                  </div>
+                )}
+              </>
             )}
           </div>
           
@@ -183,18 +182,16 @@ const Navbar = () => {
             </div>
             {!isSignedIn && (
               <div className="px-2 space-y-2">
-                <button 
-                  onClick={signIn}
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-green-600 border border-green-600 hover:bg-green-50 transition-colors"
-                >
-                  Sign In
-                </button>
-                <button 
-                  onClick={signIn}
-                  className="block w-full px-3 py-2 rounded-md text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors"
-                >
-                  Sign Up
-                </button>
+                <SignInButton mode="modal">
+                  <button className="block w-full px-3 py-2 rounded-md text-base font-medium text-green-600 border border-green-600 hover:bg-green-50 transition-colors">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignInButton mode="modal" redirectUrl="/dashboard">
+                  <button className="block w-full px-3 py-2 rounded-md text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors">
+                    Sign Up
+                  </button>
+                </SignInButton>
               </div>
             )}
           </div>

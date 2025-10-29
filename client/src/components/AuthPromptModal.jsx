@@ -1,13 +1,11 @@
-// components/AuthPromptModal.js - Authentication Prompt Modal
+// components/AuthPromptModal.js - Updated for Clerk
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { SignInButton } from '@clerk/clerk-react';
 import { Lock, X } from 'lucide-react';
 
 const AuthPromptModal = ({ onClose }) => {
-  const { signIn } = useAuth();
-
   return (
-    <div className="fixed inset-0 bg-black/30 bg-opacity-20 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl p-6 sm:p-8 max-w-md w-full relative">
         <button
           onClick={onClose}
@@ -31,15 +29,11 @@ const AuthPromptModal = ({ onClose }) => {
             >
               Cancel
             </button>
-            <button
-              onClick={() => {
-                signIn();
-                onClose();
-              }}
-              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors"
-            >
-              Sign In
-            </button>
+            <SignInButton mode="modal">
+              <button className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
           </div>
         </div>
       </div>
