@@ -24,6 +24,13 @@ const UserSchema = new mongoose.Schema(
         'Please provide a valid email',
       ],
     },
+    // Clerk ID to link Clerk user with our local user record
+    clerkId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
     role: {
       type: String,
       enum: ['creator', 'reader'],

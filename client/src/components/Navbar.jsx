@@ -129,18 +129,18 @@ const Navbar = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex space-x-2">
-                    <SignInButton mode="modal">
-                      <button className="px-3 lg:px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-full hover:bg-green-50 transition-colors">
-                        Sign In
-                      </button>
-                    </SignInButton>
-                    <SignInButton mode="modal" redirectUrl="/dashboard">
-                      <button className="px-3 lg:px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors">
-                        Sign Up
-                      </button>
-                    </SignInButton>
-                  </div>
+                    <div className="flex space-x-2">
+                      <SignInButton mode="modal">
+                        <button className="px-3 lg:px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-full hover:bg-green-50 transition-colors">
+                          Sign In
+                        </button>
+                      </SignInButton>
+                      <SignInButton mode="modal">
+                        <button className="px-3 lg:px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors">
+                          Sign Up
+                        </button>
+                      </SignInButton>
+                    </div>
                 )}
               </>
             )}
@@ -187,7 +187,7 @@ const Navbar = () => {
                     Sign In
                   </button>
                 </SignInButton>
-                <SignInButton mode="modal" redirectUrl="/dashboard">
+                <SignInButton mode="modal">
                   <button className="block w-full px-3 py-2 rounded-md text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors">
                     Sign Up
                   </button>

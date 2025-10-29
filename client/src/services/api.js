@@ -4,10 +4,13 @@ import axios from 'axios';
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  // Use VITE_API_URL when provided, otherwise use relative '/api' so Vite dev server proxy can forward requests to backend
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  // Send cookies (Clerk session cookie) with requests so server middleware can authenticate via cookie
+  withCredentials: true,
 });
 
 // Add request interceptor for authentication

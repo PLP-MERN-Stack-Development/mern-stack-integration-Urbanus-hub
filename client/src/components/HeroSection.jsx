@@ -35,9 +35,9 @@ const HeroSection = () => {
         <div className="w-full lg:w-2/3 xl:w-1/2">
           <div className="glass-effect rounded-2xl p-6 sm:p-8 shadow-2xl">
             <div className="text-center lg:text-left">
-              {isSignedIn ? (
+              {isSignedIn && user ? (
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
-                  Welcome back, {user.firstName}!
+                  Welcome back, {user?.firstName || 'there'}!
                 </h1>
               ) : (
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
