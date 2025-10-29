@@ -1,5 +1,93 @@
-
+// controllers/userController.js
 import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+
+// @desc    Register a new user
+// @route   POST /api/users/register
+// @access  Public
+export const registerUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || 'reader',
+    });
+
+    // Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '30d',
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Login user
+// @route   POST /api/users/login
+// @access  Public
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
+    // Find user and include password
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if password matches
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '30d',
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
 
 // @desc    Get current user profile
 // @route   GET /api/users/me
@@ -22,26 +110,16 @@ export const getMe = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const { name, role } = req.body;
-    
-    const fieldsToUpdate = {};
-    
-    if (name) fieldsToUpdate.name = name;
-    if (role) fieldsToUpdate.role = role;
+    const fieldsToUpdate = {
+      name: req.body.name,
+      email: req.body.email,
+      avatar: req.body.avatar,
+    };
 
     const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
       new: true,
       runValidators: true,
     });
-
-    // Also update in Clerk if name changed
-    if (name) {
-      const [firstName, ...lastNameParts] = name.split(' ');
-      await clerkClient.users.updateUser(req.user.clerkId, {
-        firstName: firstName,
-        lastName: lastNameParts.join(' '),
-      });
-    }
 
     res.status(200).json({
       success: true,
@@ -52,9 +130,41 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Get all users (Creator only)
+// @desc    Update user password
+// @route   PUT /api/users/updatepassword
+// @access  Private
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id).select('+password');
+
+    // Check current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    // Generate new token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '30d',
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { token },
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get all users (Admin only)
 // @route   GET /api/users
-// @access  Private/Creator
+// @access  Private/Admin
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -91,7 +201,7 @@ export const getUser = async (req, res) => {
 
 // @desc    Delete user
 // @route   DELETE /api/users/:id
-// @access  Private/Creator
+// @access  Private/Admin
 export const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -100,9 +210,6 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Also delete from Clerk
-    await clerkClient.users.deleteUser(user.clerkId);
-    
     await user.deleteOne();
 
     res.status(200).json({
@@ -127,50 +234,6 @@ export const getCreators = async (req, res) => {
       data: creators,
     });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
-// @desc    Sync user from Clerk webhook
-// @route   POST /api/users/webhook
-// @access  Public (but verified by Clerk)
-export const handleClerkWebhook = async (req, res) => {
-  try {
-    const { type, data } = req.body;
-
-    switch (type) {
-      case 'user.created':
-        // Create user in our database when created in Clerk
-        await User.create({
-          clerkId: data.id,
-          email: data.email_addresses[0]?.email_address,
-          name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'User',
-          avatar: data.image_url,
-          role: 'reader',
-        });
-        break;
-
-      case 'user.updated':
-        // Update user in our database
-        await User.findOneAndUpdate(
-          { clerkId: data.id },
-          {
-            email: data.email_addresses[0]?.email_address,
-            name: `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'User',
-            avatar: data.image_url,
-          }
-        );
-        break;
-
-      case 'user.deleted':
-        // Delete user from our database
-        await User.findOneAndDelete({ clerkId: data.id });
-        break;
-    }
-
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Webhook error:', error);
     res.status(400).json({ success: false, message: error.message });
   }
 };

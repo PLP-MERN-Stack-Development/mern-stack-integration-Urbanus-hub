@@ -1,4 +1,4 @@
-
+// routes/categoryRoutes.js
 import express from 'express';
 import {
   getCategories,
@@ -10,7 +10,7 @@ import {
   getCategoryPosts,
   getCategoryStats,
 } from '../controllers/categoryController.js';
-import { protect, authorize } from '../middleware/clerkAuth.js';
+import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 

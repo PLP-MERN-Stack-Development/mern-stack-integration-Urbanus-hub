@@ -10,8 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.53.3",
-    "@clerk/nextjs": "^6.34.0",
     "@tailwindcss/vite": "^4.1.16",
     "axios": "^1.12.2",
     "dotenv": "^17.2.3",

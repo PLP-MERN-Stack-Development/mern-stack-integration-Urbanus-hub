@@ -13,7 +13,6 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@clerk/express": "^1.7.42",
     "bcryptjs": "^3.0.2",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
