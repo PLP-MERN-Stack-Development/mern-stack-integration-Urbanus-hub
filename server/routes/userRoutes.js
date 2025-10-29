@@ -8,6 +8,7 @@ import {
   deleteUser,
   getCreators,
   handleClerkWebhook,
+  syncUser,
 } from '../controllers/userController.js';
 import { protect, authorize } from '../middleware/clerkAuth.js';
 
@@ -21,6 +22,8 @@ router.post('/webhook', handleClerkWebhook); // Clerk webhook endpoint
 // Protected routes (require authentication)
 router.get('/me/profile', protect, getMe);
 router.put('/me/profile', protect, updateProfile);
+// Sync route: call this once after a Clerk sign-in to ensure local user record exists
+router.get('/sync', protect, syncUser);
 
 // Creator routes
 router.get('/', protect, authorize('creator'), getUsers);

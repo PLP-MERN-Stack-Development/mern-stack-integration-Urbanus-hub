@@ -174,3 +174,19 @@ export const handleClerkWebhook = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Sync Clerk-authenticated user into local DB (create if missing)
+// @route   GET /api/users/sync
+// @access  Private (Clerk)
+export const syncUser = async (req, res) => {
+  try {
+    // The clerkAuth.protect middleware will ensure req.user exists (it finds or creates the user)
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+
+    res.status(200).json({ success: true, data: req.user });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
