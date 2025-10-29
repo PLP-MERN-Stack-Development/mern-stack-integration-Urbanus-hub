@@ -1,7 +1,27 @@
-import React from 'react'
+// App.js - Main Application Component
+import React from 'react';
+import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import CategoryFilter from './components/CategoryFilter';
+import PostGrid from './components/PostGrid';
+import Footer from './components/Footer';
+import {AuthProvider} from './context/AuthContext';
+import { PostProvider } from './context/PostContext';
 
-export const App = () => {
+function App() {
   return (
-    <div className='text-amber-200'>App</div>
-  )
+    <AuthProvider>
+      <PostProvider>
+        <div className="min-h-screen flex flex-col bg-gray-50">
+          <Navbar />
+          <HeroSection />
+          <CategoryFilter />
+          <PostGrid />
+          <Footer />
+        </div>
+      </PostProvider>
+    </AuthProvider>
+  );
 }
+
+export default App;
