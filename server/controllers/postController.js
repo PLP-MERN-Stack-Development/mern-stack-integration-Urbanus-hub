@@ -33,11 +33,7 @@ export const getPosts = async (req, res) => {
     if (tag) {
       query.tags = tag;
     }
-    
-    if(!query){
-      posts=await Post.find();
-
-    }
+ 
     // Execute query with pagination
     else{
     posts = await Post.find(query)
