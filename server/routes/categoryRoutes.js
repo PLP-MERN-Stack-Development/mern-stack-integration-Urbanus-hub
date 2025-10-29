@@ -1,6 +1,4 @@
 
-// routes/categoryRoutes.js
-import logger from '../middleware/logger.js';
 import express from 'express';
 import {
   getCategories,
@@ -12,7 +10,7 @@ import {
   getCategoryPosts,
   getCategoryStats,
 } from '../controllers/categoryController.js';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect, authorize } from '../middleware/clerkAuth.js';
 
 const router = express.Router();
 
@@ -24,8 +22,8 @@ router.get('/:id/posts', getCategoryPosts);
 router.get('/:id/stats', getCategoryStats);
 
 // Protected routes (Creator only)
-router.post('/', protect,logger, authorize('creator'), createCategory);
-router.put('/:id', protect,logger, authorize('creator'), updateCategory);
-router.delete('/:id', protect, logger,authorize('creator'), deleteCategory);
+router.post('/', protect, authorize('creator'), createCategory);
+router.put('/:id', protect, authorize('creator'), updateCategory);
+router.delete('/:id', protect, authorize('creator'), deleteCategory);
 
 export default router;

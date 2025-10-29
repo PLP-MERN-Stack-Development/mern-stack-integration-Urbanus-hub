@@ -1,4 +1,4 @@
-
+//use this instead of clerkAuth.js
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { JWT_SECRET } from '../config/env.config.js';

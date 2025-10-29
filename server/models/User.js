@@ -1,9 +1,12 @@
 // models/User.js
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-
 const UserSchema = new mongoose.Schema(
   {
+    clerkId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     name: {
       type: String,
       required: [true, 'Please provide a name'],
@@ -21,12 +24,6 @@ const UserSchema = new mongoose.Schema(
         'Please provide a valid email',
       ],
     },
-    password: {
-      type: String,
-      required: [true, 'Please provide a password'],
-      minlength: [6, 'Password must be at least 6 characters'],
-      select: false,
-    },
     role: {
       type: String,
       enum: ['creator', 'reader'],
@@ -39,21 +36,5 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Hash password before saving
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
-  
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-// Method to compare passwords
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
 
 export default mongoose.model('User', UserSchema);
