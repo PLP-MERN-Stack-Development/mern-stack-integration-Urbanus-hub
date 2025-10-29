@@ -25,11 +25,7 @@ function App() {
       <AuthProvider>
         <PostProvider>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            {/* <Navbar />
-            <HeroSection />
-            <CategoryFilter />
-            <PostGrid />
-            <Footer /> */}
+            
             <CreatorDashboard/>
           </div>
         </PostProvider>
