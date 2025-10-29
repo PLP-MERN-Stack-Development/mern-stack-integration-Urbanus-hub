@@ -7,7 +7,7 @@ import {
   Eye, EyeOff, Search, Filter, Calendar, TrendingUp, UserPlus,
   BookOpen, Settings, LogOut, Menu, X, ChevronDown, Upload,
   Save, XCircle, CheckCircle, AlertCircle, Clock, Tag,
-  Home, Layout, Grid3x3, MessageCircle, Archive
+  Home, Layout, Grid3x3, MessageCircle, Archive,Bell
 } from 'lucide-react';
 
 const CreatorDashboard = () => {
