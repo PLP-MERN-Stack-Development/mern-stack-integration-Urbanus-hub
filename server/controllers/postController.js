@@ -3,6 +3,7 @@ import Post from '../models/Post.js';
 
 export const getPosts = async (req, res) => {
   try {
+    let posts;
     const { page = 1, limit = 10, search, category, tag, isPublished } = req.query;
 
     // Build query
@@ -32,20 +33,30 @@ export const getPosts = async (req, res) => {
     if (tag) {
       query.tags = tag;
     }
+    
+    if(!query){
+      posts=await Post.find();
 
+    }
     // Execute query with pagination
-    const posts = await Post.find(query)
+    else{
+    posts = await Post.find(query)
       .populate('author', 'name avatar')
       .populate('category', 'name slug')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit);}
+
+      if(!posts){
+        return res.status(404).json({message:"No posts found 🥲🥲"})
+      }
 
     const count = await Post.countDocuments(query);
 
     res.status(200).json({
       success: true,
-      count: posts.length,
+     
+      count: count,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
       data: posts,
@@ -179,8 +190,7 @@ export const deletePost = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: {},
-    });
+      data:post});
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }

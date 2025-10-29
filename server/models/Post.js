@@ -1,4 +1,4 @@
-// Post.js - Mongoose model for blog posts
+
 import mongoose from 'mongoose';
 
 const PostSchema = new mongoose.Schema(
@@ -96,4 +96,12 @@ PostSchema.methods.incrementViewCount = function () {
   return this.save();
 };
 
-export default mongoose.model('Post', PostSchema); 
+// Static method to get published posts
+PostSchema.statics.getPublishedPosts = function () {
+  return this.find({ isPublished: true })
+    .sort({ createdAt: -1 })
+    .populate('author', 'name avatar')
+    .populate('category', 'name slug');
+};
+
+export default mongoose.model('Post', PostSchema);
