@@ -9,10 +9,9 @@ export const protect = async (req, res, next) => {
 
   // Check if token exists in headers
   if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
+    req.cookies.token
   ) {
-    token = req.headers.authorization.split(' ')[1];
+    token = req.cookies.token;
   }
 
   // Make sure token exists

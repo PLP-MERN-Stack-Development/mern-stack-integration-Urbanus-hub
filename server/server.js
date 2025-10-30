@@ -5,6 +5,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import { notFound, errorHandler } from './middleware/error.js';
 import connectDB from './config/db.config.js';
+import  cookieParser from 'cookie-parser'
 
 // Import routes
 import userRoutes from './routes/userRoutes.js';
@@ -19,9 +20,15 @@ const app = express();
 // Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin:" http://localhost:5173/",
+  methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders:"Content-Type,Authorization",
+  credential:true
+}));
 
 
 

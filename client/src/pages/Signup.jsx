@@ -4,10 +4,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, BookOpen, Check, Users } from "lucide-react";
 import { toast } from "sonner";
+import request from '../services/api'
 
 const Signup = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -53,7 +53,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!username  || !email || !password || !confirmPassword) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -76,7 +76,7 @@ const Signup = () => {
     setIsLoading(true);
     try {
       // Simulate API call to register user
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
       
       // After successful registration, sign in the user
       const userData = await signIn(email, password);
@@ -150,13 +150,13 @@ const Signup = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="">
                   <div>
                     <label
                       htmlFor="firstName"
                       className="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      First Name
+                      Username
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -167,37 +167,15 @@ const Signup = () => {
                         name="firstName"
                         type="text"
                         required
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        value={username}
+                        onChange={(e) => setUserName(e.target.value)}
                         className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="First name"
+                        placeholder="Username"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="lastName"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Last Name
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        required
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Last name"
-                      />
-                    </div>
-                  </div>
+              
                 </div>
 
                 <div>
