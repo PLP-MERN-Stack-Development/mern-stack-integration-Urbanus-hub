@@ -7,7 +7,7 @@ import {
   Eye, EyeOff, Search, Filter, Calendar, TrendingUp, UserPlus,
   BookOpen, Settings, LogOut, Menu, X, ChevronDown, Upload,
   Save, XCircle, CheckCircle, AlertCircle, Clock, Tag,
-  Home, Layout, Grid3x3, MessageCircle, Archive,Bell
+  Home, Layout, Grid3x3, MessageCircle, Archive, Bell
 } from 'lucide-react';
 
 const CreatorDashboard = () => {
@@ -17,6 +17,7 @@ const CreatorDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [isMobile, setIsMobile] = useState(false);
   
   // Mock data
   const [posts, setPosts] = useState([
@@ -112,9 +113,25 @@ const CreatorDashboard = () => {
   });
   
   useEffect(() => {
+    // Check if device is mobile
+    const checkIfMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false); // Keep sidebar closed on mobile
+      } else {
+        setSidebarOpen(true); // Open sidebar on desktop
+      }
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
     setTimeout(() => {
       setLoading(false);
     }, 1000);
+    
+    return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
   
   // Handle post operations
@@ -343,104 +360,159 @@ const CreatorDashboard = () => {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-xl transition-all duration-300 ease-in-out relative z-20`}>
-        <div className="flex flex-col h-full">
-          {/* Logo Section */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
-            <div className={`flex items-center ${!sidebarOpen && 'justify-center w-full'}`}>
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">N</span>
-              </div>
-              {sidebarOpen && <span className="ml-3 text-xl font-bold text-gray-800">Notely</span>}
-            </div>
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+      
+      {/* Mobile Top Bar with Hamburger */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-30">
+          <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-gray-400 hover:text-gray-700 focus:outline-none transition-colors"
+              className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md mr-2">
+                <span className="text-white font-bold text-sm">N</span>
+              </div>
+              <span className="text-lg font-bold text-gray-800">Notely</span>
+            </div>
+            <button className="relative p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Sidebar - Always Fixed */}
+      <aside className={`fixed top-0 left-0 h-screen bg-white shadow-xl transition-all duration-300 ease-in-out z-50 ${
+        isMobile 
+          ? sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
+          : sidebarOpen ? 'w-64' : 'w-20'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Logo Section - Always Visible */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className={`flex items-center ${!sidebarOpen && !isMobile ? 'justify-center w-full' : ''}`}>
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <span className="text-white font-bold text-lg">N</span>
+              </div>
+              {(!isMobile || sidebarOpen) && <span className="ml-3 text-xl font-bold text-gray-800">Notely</span>}
+            </div>
+            {/* Close Button - Always Visible */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="text-gray-400 hover:text-gray-700 focus:outline-none transition-colors flex-shrink-0"
+            >
+              <X className="h-5 w-5" />
             </button>
           </div>
           
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab('dashboard');
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 activeTab === 'dashboard' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <Layout className={`${sidebarOpen ? 'mr-3' : ''} h-5 w-5`} />
-              {sidebarOpen && 'Dashboard'}
+              <Layout className={`${(!isMobile && !sidebarOpen) ? '' : 'mr-3'} h-5 w-5`} />
+              {(!isMobile && sidebarOpen) || isMobile ? 'Dashboard' : ''}
             </button>
             
             <button
-              onClick={() => setActiveTab('posts')}
-              className={`w-full flex items-center ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab('posts');
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 activeTab === 'posts' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <FileText className={`${sidebarOpen ? 'mr-3' : ''} h-5 w-5`} />
-              {sidebarOpen && 'Posts'}
+              <FileText className={`${(!isMobile && !sidebarOpen) ? '' : 'mr-3'} h-5 w-5`} />
+              {(!isMobile && sidebarOpen) || isMobile ? 'Posts' : ''}
             </button>
             
             <button
-              onClick={() => setActiveTab('categories')}
-              className={`w-full flex items-center ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab('categories');
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 activeTab === 'categories' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <FolderPlus className={`${sidebarOpen ? 'mr-3' : ''} h-5 w-5`} />
-              {sidebarOpen && 'Categories'}
+              <FolderPlus className={`${(!isMobile && !sidebarOpen) ? '' : 'mr-3'} h-5 w-5`} />
+              {(!isMobile && sidebarOpen) || isMobile ? 'Categories' : ''}
             </button>
             
             <button
-              onClick={() => setActiveTab('users')}
-              className={`w-full flex items-center ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab('users');
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 activeTab === 'users' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <Users className={`${sidebarOpen ? 'mr-3' : ''} h-5 w-5`} />
-              {sidebarOpen && 'Users'}
+              <Users className={`${(!isMobile && !sidebarOpen) ? '' : 'mr-3'} h-5 w-5`} />
+              {(!isMobile && sidebarOpen) || isMobile ? 'Users' : ''}
             </button>
             
             <button
-              onClick={() => setActiveTab('analytics')}
-              className={`w-full flex items-center ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab('analytics');
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 activeTab === 'analytics' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <BarChart3 className={`${sidebarOpen ? 'mr-3' : ''} h-5 w-5`} />
-              {sidebarOpen && 'Analytics'}
+              <BarChart3 className={`${(!isMobile && !sidebarOpen) ? '' : 'mr-3'} h-5 w-5`} />
+              {(!isMobile && sidebarOpen) || isMobile ? 'Analytics' : ''}
             </button>
             
             <button
-              onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center ${sidebarOpen ? 'px-4' : 'px-2 justify-center'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+              onClick={() => {
+                setActiveTab('settings');
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center px-2' : 'px-4'} py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 activeTab === 'settings' 
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg transform scale-105' 
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <Settings className={`${sidebarOpen ? 'mr-3' : ''} h-5 w-5`} />
-              {sidebarOpen && 'Settings'}
+              <Settings className={`${(!isMobile && !sidebarOpen) ? '' : 'mr-3'} h-5 w-5`} />
+              {(!isMobile && sidebarOpen) || isMobile ? 'Settings' : ''}
             </button>
           </nav>
           
           {/* User Profile Section */}
           <div className="p-4 border-t border-gray-100">
-            <div className={`flex items-center ${sidebarOpen ? '' : 'justify-center'}`}>
-              <div className="relative">
+            <div className={`flex items-center ${(!isMobile && !sidebarOpen) ? 'justify-center' : ''}`}>
+              <div className="relative flex-shrink-0">
                 <img 
                   src={user?.avatar || "https://picsum.photos/seed/user/40/40.jpg"} 
                   alt="Profile" 
@@ -448,116 +520,131 @@ const CreatorDashboard = () => {
                 />
                 <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
-              {sidebarOpen && (
-                <div className="ml-3">
-                  <p className="text-sm font-semibold text-gray-900">{user?.firstName} {user?.lastName}</p>
+              {((!isMobile && sidebarOpen) || isMobile) && (
+                <div className="ml-3 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{user?.firstName} {user?.lastName}</p>
                   <p className="text-xs text-gray-500">Creator</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
+      </aside>
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 capitalize">
-                {activeTab === 'dashboard' && 'Dashboard Overview'}
-                {activeTab === 'posts' && 'Content Management'}
-                {activeTab === 'categories' && 'Categories'}
-                {activeTab === 'users' && 'User Management'}
-                {activeTab === 'analytics' && 'Analytics & Insights'}
-                {activeTab === 'settings' && 'Settings'}
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                {activeTab === 'dashboard' && 'Welcome back! Here\'s what\'s happening with your content.'}
-                {activeTab === 'posts' && 'Manage and organize all your blog posts.'}
-                {activeTab === 'categories' && 'Create and manage content categories.'}
-                {activeTab === 'users' && 'View and manage your platform users.'}
-                {activeTab === 'analytics' && 'Track your content performance and engagement.'}
-                {activeTab === 'settings' && 'Manage your account and preferences.'}
-              </p>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 px-4 py-2 pl-10 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
-                />
-                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+        isMobile ? 'ml-0' : sidebarOpen ? 'ml-64' : 'ml-20'
+      }`}>
+        {/* Top Header - Hidden on mobile (has separate top bar) */}
+        {!isMobile && (
+          <header className="bg-white shadow-sm border-b border-gray-200">
+            <div className="px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center">
+                {/* Hamburger Menu Button - Visible when sidebar is collapsed */}
+                {!sidebarOpen && (
+                  <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="mr-4 p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                )}
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 capitalize">
+                    {activeTab === 'dashboard' && 'Dashboard Overview'}
+                    {activeTab === 'posts' && 'Content Management'}
+                    {activeTab === 'categories' && 'Categories'}
+                    {activeTab === 'users' && 'User Management'}
+                    {activeTab === 'analytics' && 'Analytics & Insights'}
+                    {activeTab === 'settings' && 'Settings'}
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {activeTab === 'dashboard' && 'Welcome back! Here\'s what\'s happening with your content.'}
+                    {activeTab === 'posts' && 'Manage and organize all your blog posts.'}
+                    {activeTab === 'categories' && 'Create and manage content categories.'}
+                    {activeTab === 'users' && 'View and manage your platform users.'}
+                    {activeTab === 'analytics' && 'Track your content performance and engagement.'}
+                    {activeTab === 'settings' && 'Manage your account and preferences.'}
+                  </p>
+                </div>
               </div>
               
-              <button className="relative p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
-              </button>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-64 px-4 py-2 pl-10 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50"
+                  />
+                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                </div>
+                
+                <button className="relative p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+                </button>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
         
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className={`flex-1 overflow-y-auto ${isMobile ? 'pt-16' : ''} p-4 sm:p-6`}>
           {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500">Total Posts</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalPosts}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{stats.totalPosts}</p>
                       <p className="text-xs text-green-600 mt-2">+12% from last month</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-                      <FileText className="h-6 w-6" />
+                    <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                      <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500">Total Views</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalViews.toLocaleString()}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{stats.totalViews.toLocaleString()}</p>
                       <p className="text-xs text-green-600 mt-2">+23% from last month</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-                      <Eye className="h-6 w-6" />
+                    <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                      <Eye className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500">Total Users</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalUsers}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{stats.totalUsers}</p>
                       <p className="text-xs text-green-600 mt-2">+8% from last month</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white">
-                      <Users className="h-6 w-6" />
+                    <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white">
+                      <Users className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-500">Comments</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalComments}</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{stats.totalComments}</p>
                       <p className="text-xs text-green-600 mt-2">+15% from last month</p>
                     </div>
-                    <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-                      <MessageCircle className="h-6 w-6" />
+                    <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                      <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                   </div>
                 </div>
@@ -565,7 +652,7 @@ const CreatorDashboard = () => {
               
               {/* Recent Posts */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900">Recent Posts</h2>
                   <button 
                     onClick={() => setActiveTab('posts')}
@@ -575,19 +662,19 @@ const CreatorDashboard = () => {
                     <ChevronDown className="h-4 w-4 ml-1 rotate-270" />
                   </button>
                 </div>
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="space-y-4">
                     {posts.slice(0, 3).map(post => (
-                      <div key={post.id} className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div key={post.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors gap-4">
                         <div className="flex items-center space-x-4">
                           <img 
                             src={post.featuredImage} 
                             alt={post.title} 
                             className="h-14 w-14 rounded-xl object-cover shadow-sm" 
                           />
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900">{post.title}</h3>
-                            <div className="flex items-center space-x-3 text-xs text-gray-500 mt-1">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-semibold text-gray-900 truncate">{post.title}</h3>
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-500 mt-1">
                               <span className="flex items-center">
                                 <FolderPlus className="h-3 w-3 mr-1" />
                                 {post.category.name}
@@ -621,7 +708,7 @@ const CreatorDashboard = () => {
           {/* Posts Tab */}
           {activeTab === 'posts' && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setFilterStatus('all')}
@@ -657,7 +744,7 @@ const CreatorDashboard = () => {
                 
                 <button
                   onClick={() => setShowPostForm(true)}
-                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center"
+                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center self-start"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   New Post
@@ -669,37 +756,37 @@ const CreatorDashboard = () => {
                   <table className="min-w-full divide-y divide-gray-100">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Post</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comments</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Post</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Category</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Views</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Comments</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Date</th>
+                        <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {filteredPosts.map(post => (
                         <tr key={post.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <img 
                                 src={post.featuredImage} 
                                 alt={post.title} 
-                                className="h-12 w-12 rounded-xl object-cover mr-4 shadow-sm" 
+                                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover mr-3 sm:mr-4 shadow-sm" 
                               />
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">{post.title}</div>
-                                <div className="text-sm text-gray-500 truncate max-w-xs">{post.excerpt}</div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-xs sm:max-w-none">{post.title}</div>
+                                <div className="text-sm text-gray-500 truncate max-w-xs sm:hidden">{post.excerpt}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                             <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                               {post.category.name}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                             {post.isPublished ? (
                               <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 Published
@@ -710,34 +797,34 @@ const CreatorDashboard = () => {
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                             {post.viewCount.toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                             {post.comments}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">
                             {post.createdAt}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-1 sm:space-x-2">
                               <button
                                 onClick={() => handleTogglePublish(post.id)}
-                                className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
                                 title={post.isPublished ? 'Unpublish' : 'Publish'}
                               >
                                 {post.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               </button>
                               <button
                                 onClick={() => openEditPost(post)}
-                                className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDeletePost(post.id)}
-                                className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -756,11 +843,11 @@ const CreatorDashboard = () => {
           {/* Categories Tab */}
           {activeTab === 'categories' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h2 className="text-lg font-semibold text-gray-900">Categories</h2>
                 <button
                   onClick={() => setShowCategoryForm(true)}
-                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center"
+                  className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center self-start"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   New Category
@@ -772,36 +859,36 @@ const CreatorDashboard = () => {
                   <table className="min-w-full divide-y divide-gray-100">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Slug</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Description</th>
+                        <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {categories.map(category => (
                         <tr key={category.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">{category.name}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                             <div className="text-sm text-gray-500">/{category.slug}</div>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 sm:px-6 py-4 hidden md:table-cell">
                             <div className="text-sm text-gray-500">{category.description}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-1 sm:space-x-2">
                               <button
                                 onClick={() => openEditCategory(category)}
-                                className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteCategory(category.id)}
-                                className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -820,9 +907,9 @@ const CreatorDashboard = () => {
           {/* Users Tab */}
           {activeTab === 'users' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h2 className="text-lg font-semibold text-gray-900">Users</h2>
-                <button className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center">
+                <button className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center self-start">
                   <UserPlus className="h-5 w-5 mr-2" />
                   Invite User
                 </button>
@@ -833,45 +920,45 @@ const CreatorDashboard = () => {
                   <table className="min-w-full divide-y divide-gray-100">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Email</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</th>
+                        <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Joined</th>
+                        <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {filteredUsers.map(user => (
                         <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <img 
                                 src={user.avatar} 
                                 alt={user.name} 
-                                className="h-10 w-10 rounded-full mr-4 ring-2 ring-gray-200" 
+                                className="h-10 w-10 rounded-full mr-3 sm:mr-4 ring-2 ring-gray-200" 
                               />
                               <div className="text-sm font-medium text-gray-900">{user.name}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                             <div className="text-sm text-gray-500">{user.email}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-500">{user.postCount}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                             <div className="text-sm text-gray-500">{user.joinedAt}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-1 sm:space-x-2">
                               <button
-                                className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
                                 title="View Profile"
                               >
                                 <Eye className="h-4 w-4" />
                               </button>
                               <button
-                                className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                className="p-1.5 sm:p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                                 title="Block User"
                               >
                                 <XCircle className="h-4 w-4" />
@@ -893,7 +980,7 @@ const CreatorDashboard = () => {
               <h2 className="text-lg font-semibold text-gray-900">Analytics & Insights</h2>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Views Over Time</h3>
                   <div className="h-64 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
                     <div className="text-center">
@@ -904,27 +991,27 @@ const CreatorDashboard = () => {
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Top Performing Posts</h3>
                   <div className="space-y-4">
                     {posts.slice(0, 5).sort((a, b) => b.viewCount - a.viewCount).map((post, index) => (
                       <div key={post.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white flex items-center justify-center text-sm font-bold mr-3">
+                        <div className="flex items-center flex-1 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">
                             {index + 1}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{post.title}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-900 truncate">{post.title}</p>
                             <p className="text-xs text-gray-500">{post.category.name}</p>
                           </div>
                         </div>
-                        <div className="text-sm font-semibold text-gray-900">{post.viewCount.toLocaleString()} views</div>
+                        <div className="text-sm font-semibold text-gray-900 ml-2 flex-shrink-0">{post.viewCount.toLocaleString()} views</div>
                       </div>
                     ))}
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Categories Distribution</h3>
                   <div className="h-64 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
                     <div className="text-center">
@@ -935,7 +1022,7 @@ const CreatorDashboard = () => {
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Engagement Metrics</h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
@@ -966,10 +1053,10 @@ const CreatorDashboard = () => {
               <h2 className="text-lg font-semibold text-gray-900">Settings</h2>
               
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100">
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-100">
                   <h3 className="text-lg font-medium text-gray-900">Profile Settings</h3>
                 </div>
-                <div className="p-6 space-y-6">
+                <div className="p-4 sm:p-6 space-y-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name
@@ -1018,11 +1105,11 @@ const CreatorDashboard = () => {
               </div>
               
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100">
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-100">
                   <h3 className="text-lg font-medium text-gray-900">Notification Preferences</h3>
                 </div>
-                <div className="p-6 space-y-6">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                <div className="p-4 sm:p-6 space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl bg-gray-50 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">Email Notifications</h4>
                       <p className="text-sm text-gray-500 mt-1">Receive email updates about new comments and interactions.</p>
@@ -1035,7 +1122,7 @@ const CreatorDashboard = () => {
                     </button>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl bg-gray-50 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900">Public Profile</h4>
                       <p className="text-sm text-gray-500 mt-1">Make your profile visible to other users.</p>
@@ -1067,7 +1154,7 @@ const CreatorDashboard = () => {
       {showPostForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-4 sm:px-6 py-4 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-900">
                 {editingPost ? 'Edit Post' : 'Create New Post'}
               </h3>
@@ -1091,7 +1178,7 @@ const CreatorDashboard = () => {
               </button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6">
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                   Title
@@ -1192,7 +1279,7 @@ const CreatorDashboard = () => {
                 </label>
               </div>
               
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 gap-3 pt-4 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => {
@@ -1229,7 +1316,7 @@ const CreatorDashboard = () => {
       {showCategoryForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-900">
                 {editingCategory ? 'Edit Category' : 'Create New Category'}
               </h3>
@@ -1245,7 +1332,7 @@ const CreatorDashboard = () => {
               </button>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Category Name
@@ -1274,7 +1361,7 @@ const CreatorDashboard = () => {
                 />
               </div>
               
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 gap-3 pt-4 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => {

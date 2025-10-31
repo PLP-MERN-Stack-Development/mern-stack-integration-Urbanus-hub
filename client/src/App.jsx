@@ -6,6 +6,7 @@ import CreatorDashboard from "./pages/CreatorDashboard";
 import Reader from "./pages/Reader";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -16,7 +17,14 @@ function App() {
             <Route path="/*" element={<Reader />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/dashboard" element={<CreatorDashboard />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute requireRole="creator">
+                  <CreatorDashboard />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
       </PostProvider>

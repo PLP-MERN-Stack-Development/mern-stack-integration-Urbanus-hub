@@ -1,8 +1,16 @@
 // pages/Login.js - Updated with Role-Based Routing
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, BookOpen, User } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  BookOpen,
+  User,
+} from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -10,8 +18,19 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, isSignedIn, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (!authLoading && isSignedIn && user) {
+      if (user.role === "creator") {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [isSignedIn, user, authLoading, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,15 +44,17 @@ const Login = () => {
       // Call signIn with email and password
       const userData = await signIn(email, password);
       toast.success("Login successful!");
-      
+
       // Redirect based on user role
-      if (userData.role === 'creator') {
-        navigate("/creator-dashboard");
+      if (userData.role === "creator") {
+        navigate("/dashboard");
       } else {
         navigate("/");
       }
     } catch (error) {
-      toast.error(error.message || "Login failed. Please check your credentials.");
+      toast.error(
+        error.message || "Login failed. Please check your credentials."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -62,26 +83,35 @@ const Login = () => {
                 Welcome Back to Your Creative Space
               </h1>
               <p className="text-lg text-white/90 mb-6">
-                Sign in to access your dashboard, manage your content, and connect with your readers.
+                Sign in to access your dashboard, manage your content, and
+                connect with your readers.
               </p>
               <div className="space-y-3">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-white/80">Create and publish engaging content</span>
+                  <span className="text-white/80">
+                    Create and publish engaging content
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-white/80">Track your analytics and growth</span>
+                  <span className="text-white/80">
+                    Track your analytics and growth
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-white/80">Connect with a community of readers</span>
+                  <span className="text-white/80">
+                    Connect with a community of readers
+                  </span>
                 </div>
               </div>
-              
+
               {/* Demo Accounts Info */}
               <div className="mt-8 p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                <p className="text-sm font-medium text-white mb-2">Demo Accounts:</p>
+                <p className="text-sm font-medium text-white mb-2">
+                  Demo Accounts:
+                </p>
                 <div className="space-y-1 text-xs text-white/80">
                   <p>Creator: creator@example.com / password123</p>
                   <p>Reader: reader@example.com / password123</p>
@@ -247,8 +277,12 @@ const Login = () => {
                     type="button"
                     className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                   >
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.539-.246-2.289H12.24z"/>
+                    <svg
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.539-.246-2.289H12.24z" />
                     </svg>
                   </button>
 
@@ -256,8 +290,16 @@ const Login = () => {
                     type="button"
                     className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                   >
-                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                 </div>

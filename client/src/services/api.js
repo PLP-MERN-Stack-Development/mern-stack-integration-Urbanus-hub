@@ -20,11 +20,26 @@ async function request(url, options = {}) {
       return;
     }
 
-    // Parse JSON
-    const data = await response.json();
+    // Parse JSON - handle cases where response might not be JSON
+    let data;
+    try {
+      data = await response.json();
+      console.log("Response data:", data);
+      console.log("Response status:", response.status, response.ok);
+    } catch (jsonError) {
+      console.error("JSON parsing error:", jsonError);
+      // If JSON parsing fails, create a generic error object
+      data = {
+        success: false,
+        message: `Server error: ${response.status} ${response.statusText}`,
+      };
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || "Request failed");
+      console.error("Response not OK:", data);
+      throw new Error(
+        data.message || `Request failed with status ${response.status}`
+      );
     }
 
     return data;
@@ -66,7 +81,8 @@ export const postService = {
       body: JSON.stringify(commentData),
     }),
 
-  searchPosts: (query) => request(`/posts/search?q=${query}`, { method: "GET" }),
+  searchPosts: (query) =>
+    request(`/posts/search?q=${query}`, { method: "GET" }),
 };
 
 //
@@ -86,15 +102,17 @@ export const categoryService = {
 // 🔐 Auth Service (using cookies, not localStorage)
 //
 export const authService = {
-  register: (userData) =>
-    request("/auth/register", {
+  register: async (userData) => {
+    const response = await request("/users/register", {
       method: "POST",
       body: JSON.stringify(userData),
-    }),
+    });
+    return response;
+  },
 
   login: async (credentials) => {
     // Backend sets cookie automatically
-    const data = await request("/auth/login", {
+    const data = await request("/users/login", {
       method: "POST",
       body: JSON.stringify(credentials),
     });
@@ -102,14 +120,15 @@ export const authService = {
   },
 
   logout: async () => {
-    await request("/auth/logout", { method: "POST" }); // your backend should clear the cookie
+    await request("/users/logout", { method: "POST" }); // backend clears the cookie
   },
 
-  getCurrentUser: async () => {
-    // Backend reads cookie, returns user info
-    const data = await request("/auth/me", { method: "GET" });
-    return data.user;
-  },
+  // getCurrentUser: async () => {
+  //   // Backend reads cookie, returns user info
+  //   const response = await request("/users/me", { method: "GET" });
+  //   // Handle the nested data structure from backend
+  //   return response.data || response.user || response;
+  // },
 };
 
 export default request;

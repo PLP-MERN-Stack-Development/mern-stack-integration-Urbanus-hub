@@ -1,6 +1,7 @@
-// context/AuthContext.js - Updated with Role Support
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { toast } from 'sonner';
+// context/AuthContext.js - Real API Integration
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { toast } from "sonner";
+import { authService } from "../services/api";
 
 const AuthContext = createContext();
 
@@ -17,67 +18,75 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Check authentication status on mount
   useEffect(() => {
-    // Simulate checking auth status
-    setTimeout(() => {
-      const signedIn = localStorage.getItem('isSignedIn') === 'true';
-      setIsSignedIn(signedIn);
-      if (signedIn) {
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const checkAuth = async () => {
+      try {
+        // Try to get current user from backend (using cookie)
+        const userData = await authService.getCurrentUser();
         setUser(userData);
+        setIsSignedIn(true);
+
+        // Also update localStorage for consistency
+        localStorage.setItem("isSignedIn", "true");
+        localStorage.setItem("userData", JSON.stringify(userData));
+      } catch (error) {
+        // User is not authenticated, clear local storage
+        setUser(null);
+        setIsSignedIn(false);
+        localStorage.removeItem("isSignedIn");
+        localStorage.removeItem("userData");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 1000);
+    };
+
+    checkAuth();
   }, []);
 
-  const signIn = (email, password) => {
-    // Simulate API call to authenticate user
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // Mock user database - in a real app, this would be an API call
-        const users = [
-          { 
-            id: 'user1', 
-            email: 'reader@example.com', 
-            password: 'password123',
-            firstName: 'John', 
-            lastName: 'Doe',
-            role: 'reader',
-            avatar: 'https://picsum.photos/seed/reader/40/40.jpg'
-          },
-          { 
-            id: 'user2', 
-            email: 'creator@example.com', 
-            password: 'password123',
-            firstName: 'Jane', 
-            lastName: 'Smith',
-            role: 'creator',
-            avatar: 'https://picsum.photos/seed/creator/40/40.jpg'
-          }
-        ];
-        
-        const foundUser = users.find(u => u.email === email && u.password === password);
-        
-        if (foundUser) {
-          const { password, ...userWithoutPassword } = foundUser;
-          setUser(userWithoutPassword);
-          setIsSignedIn(true);
-          localStorage.setItem('isSignedIn', 'true');
-          localStorage.setItem('userData', JSON.stringify(userWithoutPassword));
-          resolve(userWithoutPassword);
-        } else {
-          reject(new Error('Invalid email or password'));
-        }
-      }, 1000);
-    });
+  const signIn = async (email, password) => {
+    try {
+      const response = await authService.login({ email, password });
+
+      // Extract user data from response
+      const userData = response.data || response;
+
+      setUser(userData);
+      setIsSignedIn(true);
+
+      // Store in localStorage
+      localStorage.setItem("isSignedIn", "true");
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      toast.success("Successfully signed in!");
+      return userData;
+    } catch (error) {
+      toast.error(error.message || "Failed to sign in");
+      throw error;
+    }
   };
 
-  const signOut = () => {
-    setUser(null);
-    setIsSignedIn(false);
-    localStorage.removeItem('isSignedIn');
-    localStorage.removeItem('userData');
-    toast.success('Successfully signed out!');
+  const signOut = async () => {
+    try {
+      // Call logout endpoint to clear cookie
+      await authService.logout();
+
+      setUser(null);
+      setIsSignedIn(false);
+      localStorage.removeItem("isSignedIn");
+      localStorage.removeItem("userData");
+
+      toast.success("Successfully signed out!");
+    } catch (error) {
+      // Still clear local state even if API call fails
+      setUser(null);
+      setIsSignedIn(false);
+      localStorage.removeItem("isSignedIn");
+      localStorage.removeItem("userData");
+
+      console.error("Logout error:", error);
+      toast.success("Signed out");
+    }
   };
 
   const value = {
@@ -85,7 +94,7 @@ export const AuthProvider = ({ children }) => {
     user,
     isLoading,
     signIn,
-    signOut
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

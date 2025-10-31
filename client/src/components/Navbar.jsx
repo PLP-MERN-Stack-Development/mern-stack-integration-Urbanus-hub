@@ -22,7 +22,7 @@ import {
   MessageCircle,
   TrendingUp,
   Archive,
-  HelpCircle
+  HelpCircle,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -33,7 +33,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [hasNotifications, setHasNotifications] = useState(true);
   const navigate = useNavigate();
-  
+
   const userMenuRef = useRef(null);
   const notificationRef = useRef(null);
 
@@ -43,14 +43,17 @@ const Navbar = () => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
         setShowNotifications(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -61,7 +64,7 @@ const Navbar = () => {
       action: "liked your article",
       time: "2 hours ago",
       avatar: "https://picsum.photos/seed/user1/32/32.jpg",
-      read: false
+      read: false,
     },
     {
       id: 2,
@@ -69,7 +72,7 @@ const Navbar = () => {
       action: "commented on your post",
       time: "5 hours ago",
       avatar: "https://picsum.photos/seed/user2/32/32.jpg",
-      read: false
+      read: false,
     },
     {
       id: 3,
@@ -77,7 +80,7 @@ const Navbar = () => {
       action: "started following you",
       time: "1 day ago",
       avatar: "https://picsum.photos/seed/user3/32/32.jpg",
-      read: true
+      read: true,
     },
   ];
 
@@ -93,7 +96,7 @@ const Navbar = () => {
     setShowNotifications(false);
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const navigationItems = [
     { label: "Home", href: "/", icon: Home },
@@ -103,31 +106,33 @@ const Navbar = () => {
   ];
 
   const userMenuItems = [
-    {
-      label: "My Profile",
-      href: "/profile",
-      icon: User,
-      description: "View and edit your profile"
-    },
-    {
-      label: "My Articles",
-      href: user?.role === "creator" ? "/creator-dashboard" : "/my-articles",
-      icon: FileText,
-      description: user?.role === "creator" ? "Manage your content" : "View your posts"
-    },
-    {
-      label: "Bookmarks",
-      href: "/bookmarks",
-      icon: Bookmark,
-      description: "Saved articles"
-    },
-    {
-      label: "Settings",
-      href: "/settings",
-      icon: Settings,
-      description: "Account preferences"
-    },
-  ];
+  {
+    label: "My Profile",
+    href: "/profile",
+    icon: User,
+    description: "View and edit your profile",
+  },
+  {
+    label: "My Articles",
+    href: user?.role === "creator" ? "/creator-dashboard" : "/my-articles",
+    icon: FileText,
+    description:
+      user?.role === "creator" ? "Manage your content" : "View your posts",
+  },
+  {
+    label: "Bookmarks",
+    href: "/bookmarks",
+    icon: Bookmark,
+    description: "Saved articles",
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    description: "Account preferences",
+  },
+];
+  
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -198,9 +203,11 @@ const Navbar = () => {
                         )}
                       </button>
                       {showNotifications && (
-                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl p-4 z-10 max-h-96 overflow-y-auto">
+                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl p-4 z-50 max-h-96 overflow-y-auto">
                           <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-semibold text-gray-800">Notifications</h3>
+                            <h3 className="font-semibold text-gray-800">
+                              Notifications
+                            </h3>
                             <button className="text-xs text-green-600 hover:text-green-700">
                               Mark all as read
                             </button>
@@ -209,9 +216,13 @@ const Navbar = () => {
                             {notifications.map((notif) => (
                               <div
                                 key={notif.id}
-                                onClick={() => handleNotificationClick(notif.id)}
+                                onClick={() =>
+                                  handleNotificationClick(notif.id)
+                                }
                                 className={`flex items-start p-2 rounded-lg cursor-pointer transition-colors ${
-                                  !notif.read ? 'bg-blue-50' : 'hover:bg-gray-50'
+                                  !notif.read
+                                    ? "bg-blue-50"
+                                    : "hover:bg-gray-50"
                                 }`}
                               >
                                 <img
@@ -237,8 +248,8 @@ const Navbar = () => {
                             ))}
                           </div>
                           <div className="mt-3 pt-3 border-t border-gray-100">
-                            <Link 
-                              to="/notifications" 
+                            <Link
+                              to="/notifications"
                               className="text-sm text-green-600 hover:text-green-700 font-medium"
                             >
                               View all notifications
@@ -257,7 +268,10 @@ const Navbar = () => {
                         <div className="relative">
                           <img
                             className="h-8 w-8 rounded-full ring-2 ring-green-500 ring-offset-2"
-                            src={user?.avatar || "https://picsum.photos/seed/user/40/40.jpg"}
+                            src={
+                              user?.avatar ||
+                              "https://picsum.photos/seed/user/40/40.jpg"
+                            }
                             alt="Profile"
                           />
                           <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -270,19 +284,24 @@ const Navbar = () => {
                             {user?.role}
                           </p>
                         </div>
-                        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${
-                          showUserMenu ? 'rotate-180' : ''
-                        }`} />
+                        <ChevronDown
+                          className={`h-4 w-4 text-gray-400 transition-transform ${
+                            showUserMenu ? "rotate-180" : ""
+                          }`}
+                        />
                       </button>
-                      
+
                       {showUserMenu && (
-                        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl py-2 z-10">
+                        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl py-2 z-50">
                           {/* User Info Header */}
                           <div className="px-4 py-3 border-b border-gray-100">
                             <div className="flex items-center">
                               <img
                                 className="h-10 w-10 rounded-full mr-3"
-                                src={user?.avatar || "https://picsum.photos/seed/user/40/40.jpg"}
+                                src={
+                                  user?.avatar ||
+                                  "https://picsum.photos/seed/user/40/40.jpg"
+                                }
                                 alt="Profile"
                               />
                               <div className="flex-1 min-w-0">
@@ -300,7 +319,7 @@ const Navbar = () => {
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Menu Items */}
                           <div className="py-1">
                             {userMenuItems.map((item) => {
@@ -315,15 +334,17 @@ const Navbar = () => {
                                   <Icon className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-600" />
                                   <div className="flex-1">
                                     <p className="font-medium">{item.label}</p>
-                                    <p className="text-xs text-gray-500">{item.description}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {item.description}
+                                    </p>
                                   </div>
                                 </Link>
                               );
                             })}
                           </div>
-                          
+
                           {/* Creator-specific options */}
-                          {user?.role === 'creator' && (
+                          {user?.role === "creator" && (
                             <div className="py-1 border-t border-gray-100">
                               <Link
                                 to="/creator-dashboard/analytics"
@@ -333,7 +354,9 @@ const Navbar = () => {
                                 <TrendingUp className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-600" />
                                 <div className="flex-1">
                                   <p className="font-medium">Analytics</p>
-                                  <p className="text-xs text-gray-500">View your stats</p>
+                                  <p className="text-xs text-gray-500">
+                                    View your stats
+                                  </p>
                                 </div>
                               </Link>
                               <Link
@@ -343,13 +366,17 @@ const Navbar = () => {
                               >
                                 <PenTool className="h-4 w-4 mr-3 text-gray-400 group-hover:text-green-600" />
                                 <div className="flex-1">
-                                  <p className="font-medium">Creator Dashboard</p>
-                                  <p className="text-xs text-gray-500">Manage content</p>
+                                  <p className="font-medium">
+                                    Creator Dashboard
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Manage content
+                                  </p>
                                 </div>
                               </Link>
                             </div>
                           )}
-                          
+
                           {/* Sign Out */}
                           <div className="py-1 border-t border-gray-100">
                             <button
@@ -420,7 +447,7 @@ const Navbar = () => {
               );
             })}
           </div>
-          
+
           <div className="pt-4 pb-3 border-t border-gray-200">
             {/* Mobile Search */}
             <div className="px-2 mb-3">
@@ -435,7 +462,7 @@ const Navbar = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Mobile Auth Section */}
             {isSignedIn ? (
               <div className="px-2 space-y-2">
@@ -443,17 +470,22 @@ const Navbar = () => {
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <img
                     className="h-10 w-10 rounded-full mr-3"
-                    src={user?.avatar || "https://picsum.photos/seed/user/40/40.jpg"}
+                    src={
+                      user?.avatar ||
+                      "https://picsum.photos/seed/user/40/40.jpg"
+                    }
                     alt="Profile"
                   />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">
                       {user?.firstName} {user?.lastName}
                     </p>
-                    <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                    <p className="text-xs text-gray-500 capitalize">
+                      {user?.role}
+                    </p>
                   </div>
                 </div>
-                
+
                 {/* Mobile Menu Items */}
                 {userMenuItems.map((item) => {
                   const Icon = item.icon;
@@ -469,7 +501,7 @@ const Navbar = () => {
                     </Link>
                   );
                 })}
-                
+
                 {/* Mobile Sign Out */}
                 <button
                   onClick={() => {
